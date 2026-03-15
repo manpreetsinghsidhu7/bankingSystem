@@ -70,9 +70,9 @@ export const PinSetupModal = ({ isOpen, onClose, onSubmit, title = 'Create PIN',
   const inputBox = "w-10 h-12 text-center text-lg font-bold rounded-xl border border-surface-700/50 bg-surface-800/50 text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all";
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in font-sans">
+    <div className="fixed inset-0 z-[70] animate-fade-in font-sans" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', top: 0, left: 0 }}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={handleClose}></div>
-      <div className="relative bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-800/50 text-white">
+      <div className="relative bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-800/50 text-white mx-4">
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b border-surface-800/50">
           <h3 className="text-sm font-bold">{step === 3 ? 'Done' : title}</h3>

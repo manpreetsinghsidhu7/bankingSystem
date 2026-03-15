@@ -1,12 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
-
 @layer base {
   body {
     @apply bg-surface-50 text-surface-900 dark:bg-surface-950 dark:text-surface-100 transition-colors duration-300;
+    touch-action: pan-x pan-y;
+  }
+
+  /* Prevent zoom on input focus on mobile */
+  input, select, textarea {
+    font-size: 16px !important;
   }
 }
 

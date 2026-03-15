@@ -48,8 +48,8 @@ const Settings = () => {
     try {
       const resp = await updateProfile(formData);
       updateUserProfile({ ...user, ...resp.data.user });
-      toast.success('Profile updated');
-    } catch (err) { toast.error(err.message || 'Update failed'); } finally { setIsLoading(false); }
+      toast.success('Profile information updated successfully');
+    } catch (err) { toast.error(err.message || 'Failed to save changes. Please try again.'); } finally { setIsLoading(false); }
   };
 
   const initiatePasswordUpdate = (e) => {
@@ -61,13 +61,13 @@ const Settings = () => {
   };
 
   const handleOtpSubmit = async (entered) => {
-    if (entered !== dummyOtp) return toast.error('Invalid OTP');
+    if (entered !== dummyOtp) return toast.error('Invalid OTP. Please check the code and try again.');
     setShowOtp(false); setIsPasswordLoading(true);
     try {
-      await api.patch('/auth/change-password', { oldPassword: 'BYPASS_OTP', newPassword: passwordData.newPassword });
-      toast.success('Password changed');
+      await api.patch('auth/change-password', { oldPassword: 'BYPASS_OTP', newPassword: passwordData.newPassword });
+      toast.success('Password changed successfully. Please use your new password on next login.');
       setPasswordData({ newPassword: '', confirmPassword: '' });
-    } catch (err) { toast.error(err.message || 'Failed'); } finally { setIsPasswordLoading(false); }
+    } catch (err) { toast.error(err.message || 'Failed to update password. Please try again.'); } finally { setIsPasswordLoading(false); }
   };
 
   const openDeleteProfile = () => {
@@ -84,7 +84,7 @@ const Settings = () => {
     setDeleteLoading(true);
     try {
       // Verify password
-      await api.post('/auth/login', { identifier: user?.email, password: deletePassword });
+      await api.post('auth/login', { identifier: user?.email, password: deletePassword });
       await closeProfile();
       toast.success('Account deleted');
       logout();
@@ -172,11 +172,11 @@ const Settings = () => {
         subtitle={<span>OTP sent to <strong>{maskedIdentity}</strong><br/><span className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded inline-block mt-2">Demo OTP: {dummyOtp}</span></span>}
       />
 
-      {/* Delete Profile Modal */}
+      {/* Delete Profile Modal — screen centered */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in font-sans">
+        <div className="fixed inset-0 z-[70] animate-fade-in font-sans" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', top: 0, left: 0 }}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setShowDeleteModal(false)}></div>
-          <div className="relative bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-800/50 text-white">
+          <div className="relative bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-800/50 text-white mx-4">
             <div className="flex justify-between items-center p-5 border-b border-surface-800/50">
               <h3 className="text-sm font-bold text-red-400">Delete Account</h3>
               <button onClick={() => setShowDeleteModal(false)} className="text-surface-400 hover:text-surface-200 bg-surface-800 p-1.5 rounded-lg"><X className="h-4 w-4" /></button>

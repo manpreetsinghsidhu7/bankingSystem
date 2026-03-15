@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export const OtpPinModal = ({ isOpen, onClose, onSubmit, title, subtitle, length = 4, placeholder = "•" }) => {
+export const OtpPinModal = ({ isOpen, onClose, onSubmit, title, subtitle, length = 4, placeholder = "•", submitLabel = "Confirm" }) => {
   const [digits, setDigits] = useState(Array(length).fill(''));
   const inputRefs = useRef([]);
 
@@ -44,9 +44,9 @@ export const OtpPinModal = ({ isOpen, onClose, onSubmit, title, subtitle, length
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-[100] animate-fade-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', top: 0, left: 0 }}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="relative bg-white dark:bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-200/50 dark:border-surface-700/50 p-8">
+      <div className="relative bg-white dark:bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-200/50 dark:border-surface-700/50 p-8 mx-4">
         <button onClick={onClose} className="absolute top-5 right-5 text-surface-400 hover:text-surface-600 dark:hover:text-surface-200 transition-colors p-2 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-xl">
           <X className="w-5 h-5" />
         </button>
@@ -73,6 +73,7 @@ export const OtpPinModal = ({ isOpen, onClose, onSubmit, title, subtitle, length
                 onKeyDown={(e) => handleKeyDown(e, idx)}
                 placeholder={placeholder}
                 className="w-12 h-14 text-center text-xl font-bold bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl focus:bg-white dark:focus:bg-surface-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all duration-200 text-surface-900 dark:text-surface-100"
+                style={{ fontSize: '20px' }}
               />
             ))}
           </div>
@@ -82,7 +83,7 @@ export const OtpPinModal = ({ isOpen, onClose, onSubmit, title, subtitle, length
             disabled={digits.join('').length !== length}
             className="w-full py-3.5 rounded-xl text-surface-900 font-bold text-sm bg-brand-500 hover:bg-brand-400 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-brand-500/25 active:scale-[0.98]"
           >
-            Verify
+            {submitLabel}
           </button>
         </form>
       </div>

@@ -68,11 +68,11 @@ const Dashboard = () => {
 
   const handleSelectAccount = (acc) => { setAccount(acc); setShowBalance(false); setFilters({ type: '', startDate: '' }); };
   const handleTxClick = async (txId) => { try { const r = await getTransactionDetail(txId); setSelectedTx(r.data.transaction); setIsModalOpen(true); } catch { toast.error('Failed to load details'); } };
-  const handlePinSubmit = async (pin) => { try { await verifyPin(account.id, pin); setShowPinModal(false); setShowBalance(true); toast.success('Balance unlocked'); setTimeout(() => setShowBalance(false), 30000); } catch { toast.error('Incorrect PIN'); } };
+  const handlePinSubmit = async (pin) => { try { await verifyPin(account.id, pin); setShowPinModal(false); setShowBalance(true); toast.success('Balance unlocked. Auto-hides in 30 seconds.'); setTimeout(() => setShowBalance(false), 30000); } catch { toast.error('Incorrect PIN. Please try again.'); } };
 
   const handleCreatePin = async (pin) => {
     await setPin(account.id, pin);
-    toast.success('PIN created!');
+    toast.success('Payment PIN created successfully. Your account is now fully activated.');
     setShowPinSetup(false);
     // Refresh data
     setLoading(true);
@@ -81,7 +81,7 @@ const Dashboard = () => {
 
   const handleChangePin = async (pin) => {
     await setPin(account.id, pin);
-    toast.success('PIN updated!');
+    toast.success('Payment PIN updated successfully.');
     setShowPinSetup(false);
   };
 
@@ -90,20 +90,20 @@ const Dashboard = () => {
 
   const openDeleteModal = (acc, e) => { e.stopPropagation(); setDeleteTargetAcc(acc); setDeletePin(''); setDeletePassword(''); setShowDeleteModal(true); };
   const handleDeleteAccount = async () => {
-    if (!deletePassword) return toast.error('Enter your VAYU password');
+    if (!deletePassword) return toast.error('Please enter your VAYU portal password to confirm deletion');
     setDeleteLoading(true);
     try {
       // Verify password first
-      await api.post('/auth/login', { identifier: user?.email, password: deletePassword });
+      await api.post('auth/login', { identifier: user?.email, password: deletePassword });
       // Delete account with PIN
       await deleteAccount(deleteTargetAcc.id, deletePin || '000000');
-      toast.success('Account deleted');
+      toast.success('Account has been permanently closed and removed');
       setShowDeleteModal(false);
       // Refresh
       setLoading(true);
       setAccount(null);
       await fetchDashboardData();
-    } catch (err) { toast.error(err.message || 'Deletion failed'); } finally { setDeleteLoading(false); }
+    } catch (err) { toast.error(err.message || 'Account deletion failed. Please try again.'); } finally { setDeleteLoading(false); }
   };
 
   if (loading) return (
@@ -156,7 +156,7 @@ const Dashboard = () => {
           const cc = getCardColor(idx);
           const isSelected = account.id === acc.id;
           return (
-            <button key={acc.id} onClick={() => handleSelectAccount(acc)}
+            <button key={acc.id} onClick={() => handleSelectAccount(acc)} onMouseEnter={() => handleSelectAccount(acc)}
               className={`relative flex flex-col items-start px-5 py-3.5 rounded-2xl border transition-all duration-200 min-w-[180px] text-left group ${
                 isSelected
                   ? `bg-gradient-to-br ${cc.from} ${cc.to} border-transparent shadow-lg scale-[1.02] text-white`
@@ -332,11 +332,11 @@ const Dashboard = () => {
         )}
       </section>
 
-      {/* Transaction Detail Modal */}
+      {/* Transaction Detail Modal — screen centered */}
       {isModalOpen && selectedTx && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[60] animate-fade-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', top: 0, left: 0 }}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-          <div className="relative bg-white dark:bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-200/50 dark:border-surface-800/50">
+          <div className="relative bg-white dark:bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-200/50 dark:border-surface-800/50 mx-4">
             <div className="flex justify-between items-center p-5 border-b border-surface-100 dark:border-surface-800">
               <h3 className="text-sm font-bold text-surface-900 dark:text-surface-100">Receipt</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-200 bg-surface-100 dark:bg-surface-800 p-1.5 rounded-lg"><X className="h-4 w-4" /></button>
@@ -361,14 +361,14 @@ const Dashboard = () => {
         </div>
       )}
 
-      <OtpPinModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} onSubmit={handlePinSubmit} title="Verify PIN" length={6} subtitle="Enter your 6-digit secure PIN to unlock balance." />
+      <OtpPinModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} onSubmit={handlePinSubmit} title="Verify PIN" length={6} submitLabel="Unlock Balance" subtitle="Enter your 6-digit secure PIN to view account balance." />
       <PinSetupModal isOpen={showPinSetup} onClose={() => setShowPinSetup(false)} onSubmit={pinSetupIsChange ? handleChangePin : handleCreatePin} title={pinSetupIsChange ? 'Change PIN' : 'Create PIN'} isChange={pinSetupIsChange} />
 
-      {/* Delete Account Modal */}
+      {/* Delete Account Modal — screen centered */}
       {showDeleteModal && deleteTargetAcc && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in font-sans">
+        <div className="fixed inset-0 z-[70] animate-fade-in font-sans" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', top: 0, left: 0 }}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setShowDeleteModal(false)}></div>
-          <div className="relative bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-800/50 text-white">
+          <div className="relative bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-800/50 text-white mx-4">
             <div className="flex justify-between items-center p-5 border-b border-surface-800/50">
               <h3 className="text-sm font-bold text-red-400">Delete Account</h3>
               <button onClick={() => setShowDeleteModal(false)} className="text-surface-400 hover:text-surface-200 bg-surface-800 p-1.5 rounded-lg"><X className="h-4 w-4" /></button>

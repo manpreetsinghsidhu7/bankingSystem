@@ -87,10 +87,10 @@ const Transfer = () => {
   };
 
   const handleVerifyReceiver = async () => {
-    if (!receiverAccount) return toast.error('Enter receiver account');
+    if (!receiverAccount) return toast.error('Please enter a recipient account number');
     setIsVerifying(true);
-    try { const r = await verifyReceiver(receiverAccount); setReceiverName(r.data.name); setReceiverVerified(true); toast.success('Recipient verified'); }
-    catch (err) { setReceiverVerified(false); setReceiverName(''); toast.error(err.message || 'Invalid account'); }
+    try { const r = await verifyReceiver(receiverAccount); setReceiverName(r.data.name); setReceiverVerified(true); toast.success(`Recipient verified: ${r.data.name}`); }
+    catch (err) { setReceiverVerified(false); setReceiverName(''); toast.error(err.message || 'Account not found. Please verify the account number.'); }
     finally { setIsVerifying(false); }
   };
 
@@ -99,13 +99,14 @@ const Transfer = () => {
   const initiateTransfer = (e) => {
     e.preventDefault();
     if (selectedAccount?.status !== 'ACTIVE') {
-      return toast.error('Sender account is pending approval. Payments are restricted.');
+      return toast.error('Your account is currently pending approval. Please contact support.');
     }
-    if (!receiverVerified) return toast.error('Verify recipient first');
-    if (!selectedAccountId || !amount) return toast.error('Fill required fields');
+    if (!receiverVerified) return toast.error('Please verify the recipient account before proceeding');
+    if (!selectedAccountId || !amount) return toast.error('Please fill in all required fields');
     const transferAmount = parseFloat(amount);
+    if (transferAmount < 1) return toast.error('Minimum transfer amount is ₹1');
     if (dailySpent + transferAmount > DAILY_LIMIT) {
-      return toast.error(`Daily limit exceeded. Remaining: ₹${(DAILY_LIMIT - dailySpent).toLocaleString('en-IN')}`);
+      return toast.error(`Daily transaction limit exceeded. Available limit: ₹${(DAILY_LIMIT - dailySpent).toLocaleString('en-IN')}`);
     }
     setShowPinModal(true);
   };
@@ -114,10 +115,10 @@ const Transfer = () => {
     setLoading(true); setShowPinModal(false);
     try {
       await processTransfer({ senderAccountId: selectedAccountId, receiverAccountNumber: receiverAccount, amount: parseFloat(amount), description, pin });
-      toast.success('Payment sent!');
+      toast.success(`₹${parseFloat(amount).toLocaleString('en-IN')} transferred successfully to ${receiverName}`);
       setReceiverAccount(''); setReceiverVerified(false); setReceiverName(''); setAmount(''); setDescription('');
       setDailySpent(prev => prev + parseFloat(amount));
-    } catch (err) { toast.error(err.message || 'Failed'); } finally { setLoading(false); }
+    } catch (err) { toast.error(err.message || 'Transaction could not be processed. Please try again.'); } finally { setLoading(false); }
   };
 
   const handleBalancePinSubmit = async (pin) => {
@@ -125,7 +126,7 @@ const Transfer = () => {
       await verifyPin(selectedAccountId, pin);
       setShowBalancePinModal(false); setShowBalance(true);
       setTimeout(() => setShowBalance(false), 30000);
-    } catch { toast.error('Incorrect PIN'); }
+    } catch { toast.error('Incorrect PIN. Balance verification failed.'); }
   };
 
   const remainingLimit = Math.max(0, DAILY_LIMIT - dailySpent);
@@ -326,11 +327,11 @@ const Transfer = () => {
         </div>
       </div>
 
-      <OtpPinModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} onSubmit={executeTransfer} title="Authorize Payment" length={6}
+      <OtpPinModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} onSubmit={executeTransfer} title="Authorize Payment" length={6} submitLabel="Pay"
         subtitle={<span>Sending <strong>₹{parseFloat(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> to <strong>{receiverName}</strong>. Enter your 6-digit PIN.</span>} />
 
-      <OtpPinModal isOpen={showBalancePinModal} onClose={() => setShowBalancePinModal(false)} onSubmit={handleBalancePinSubmit} title="Verify PIN" length={6}
-        subtitle="Enter your PIN to view account balance." />
+      <OtpPinModal isOpen={showBalancePinModal} onClose={() => setShowBalancePinModal(false)} onSubmit={handleBalancePinSubmit} title="View Balance" length={6} submitLabel="Unlock Balance"
+        subtitle="Enter your 6-digit PIN to view your account balance." />
     </div>
   );
 };

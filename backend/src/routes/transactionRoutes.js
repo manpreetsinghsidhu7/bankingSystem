@@ -19,9 +19,10 @@ const transferLimiter = rateLimit({
 const transferSchema = Joi.object({
   senderAccountId: Joi.string().guid({ version: 'uuidv4' }).required(),
   receiverAccountNumber: Joi.string().required(),
-  amount: Joi.number().positive().precision(2).required(),
+  amount: Joi.number().positive().min(1).precision(2).required(),
   description: Joi.string().max(255).allow('', null),
-  referenceId: Joi.string().max(100) // Idempotency key
+  referenceId: Joi.string().max(100), // Idempotency key
+  pin: Joi.string().length(6).pattern(/^[0-9]+$/).required()
 });
 
 router.post('/transfer', transferLimiter, validateRequest(transferSchema), transactionController.processTransfer);

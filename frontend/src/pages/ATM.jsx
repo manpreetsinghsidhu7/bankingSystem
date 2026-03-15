@@ -44,11 +44,11 @@ const ATM = () => {
   const initiateTransaction = (e) => {
     e.preventDefault();
     if (selectedAccount?.status !== 'ACTIVE') {
-      return toast.error('Account is pending approval. ATM services are restricted.');
+      return toast.error('This account is pending approval. ATM services are temporarily unavailable.');
     }
     const val = parseFloat(amount);
-    if (!val || val <= 0) return toast.error('Enter a valid amount');
-    if (val > maxAmount) return toast.error(`Maximum ${mode} amount is ₹${maxAmount.toLocaleString('en-IN')}`);
+    if (!val || val < 1) return toast.error('Please enter a valid amount of at least ₹1');
+    if (val > maxAmount) return toast.error(`Maximum ${mode} limit is ₹${maxAmount.toLocaleString('en-IN')} per transaction`);
     setShowPinModal(true);
   };
 
@@ -60,13 +60,13 @@ const ATM = () => {
       // Execute
       if (mode === 'deposit') {
         await deposit(selectedAccountId, parseFloat(amount), 'ATM Cash Deposit');
-        toast.success(`₹${parseFloat(amount).toLocaleString('en-IN')} deposited!`);
+        toast.success(`₹${parseFloat(amount).toLocaleString('en-IN')} deposited successfully to your account`);
       } else {
         await withdraw(selectedAccountId, parseFloat(amount), 'ATM Cash Withdrawal');
-        toast.success(`₹${parseFloat(amount).toLocaleString('en-IN')} withdrawn!`);
+        toast.success(`₹${parseFloat(amount).toLocaleString('en-IN')} withdrawn successfully from your account`);
       }
       setAmount('');
-    } catch (err) { toast.error(err.message || 'Transaction failed'); } finally { setLoading(false); }
+    } catch (err) { toast.error(err.message || 'Transaction could not be completed. Please try again.'); } finally { setLoading(false); }
   };
 
   if (initializing) return (
@@ -230,8 +230,9 @@ const ATM = () => {
         </div>
       </div>
 
-      <OtpPinModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} onSubmit={executeTransaction} title="Authorize Transaction" length={6}
-        subtitle={<span>{mode === 'deposit' ? 'Depositing' : 'Withdrawing'} <strong>₹{parseFloat(amount || 0).toLocaleString('en-IN')}</strong>. Enter your 6-digit PIN.</span>} />
+      <OtpPinModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} onSubmit={executeTransaction} title={mode === 'deposit' ? 'Confirm Deposit' : 'Confirm Withdrawal'} length={6}
+        submitLabel={mode === 'deposit' ? 'Deposit' : 'Withdraw'}
+        subtitle={<span>{mode === 'deposit' ? 'Depositing' : 'Withdrawing'} <strong>₹{parseFloat(amount || 0).toLocaleString('en-IN')}</strong>. Enter your 6-digit PIN to confirm.</span>} />
     </div>
   );
 };

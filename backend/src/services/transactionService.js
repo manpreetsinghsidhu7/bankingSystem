@@ -6,8 +6,8 @@ const AppError = require('../utils/AppError');
 
 const transactionService = {
   async processTransfer(userId, { senderAccountId, receiverAccountNumber, amount, description, referenceId, pin }) {
-    if (amount <= 0) throw new AppError('Amount must be greater than zero', 400);
-    if (!pin) throw new AppError('Payment PIN is required', 400);
+    if (amount < 1) throw new AppError('Minimum transfer amount is ₹1', 400);
+    if (!pin) throw new AppError('Payment PIN is required to authorise this transfer', 400);
 
     const senderAccount = await accountRepository.getAccountById(senderAccountId);
     if (!senderAccount) throw new AppError('Sender account not found', 404);
@@ -19,15 +19,15 @@ const transactionService = {
     
     // Validate status
     if (senderAccount.status !== 'ACTIVE') {
-      throw new AppError('Sender account is not active restricted', 403);
+      throw new AppError('Your account is not yet active. Please wait for admin approval.', 403);
     }
 
     if (!senderAccount.pin_hash) {
-      throw new AppError('Please set up a Payment PIN for this account first', 400);
+      throw new AppError('Please set up a Payment PIN for this account before making transfers', 400);
     }
     const isPinValid = await bcrypt.compare(pin, senderAccount.pin_hash);
     if (!isPinValid) {
-      throw new AppError('Invalid Payment PIN', 401);
+      throw new AppError('Incorrect Payment PIN. Please try again.', 401);
     }
     
     // To maintain idempotency, we require or generate a referenceId

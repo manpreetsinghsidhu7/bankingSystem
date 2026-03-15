@@ -51,11 +51,27 @@ function App() {
           </Routes>
         </AuthProvider>
         <Toaster 
-          position="top-right" 
+          position="top-center"
+          containerStyle={{ top: 72 }}
           toastOptions={{
-            className: '!bg-surface-800 !text-surface-100 !rounded-xl !shadow-2xl !border !border-surface-700/50 !text-sm !font-medium',
-            duration: 3000,
-            style: { padding: '14px 18px' },
+            duration: 3500,
+            style: {
+              background: '#1e293b',
+              color: '#f1f5f9',
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              fontSize: '13px',
+              fontWeight: '500',
+              padding: '12px 18px',
+              maxWidth: '360px',
+            },
+            success: {
+              iconTheme: { primary: '#f59e0b', secondary: '#1e293b' },
+            },
+            error: {
+              iconTheme: { primary: '#ef4444', secondary: '#1e293b' },
+            },
           }}
         />
       </Router>
