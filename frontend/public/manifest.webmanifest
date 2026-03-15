@@ -1,0 +1,31 @@
+{
+  "name": "VAYU BANK",
+  "short_name": "VAYU",
+  "description": "Digital Banking Reimagined - Professional Banking App",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/VAYU.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Payments",
+      "url": "/payments",
+      "icons": [{ "src": "/images/VAYU.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "ATM",
+      "url": "/atm",
+      "icons": [{ "src": "/images/VAYU.png", "sizes": "512x512" }]
+    }
+  ]
+}
