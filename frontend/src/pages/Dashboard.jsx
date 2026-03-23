@@ -290,6 +290,19 @@ const Dashboard = () => {
                   <div className="divide-y divide-surface-100 dark:divide-surface-800">
                     {transactions.map((tx) => {
                       const isPositive = tx.receiver_account_id === account?.id || tx.type === 'DEPOSIT';
+                      // Build smart label
+                      const counterparty = isPositive
+                        ? (tx.sender_account?.users ? `${tx.sender_account.users.first_name} ${tx.sender_account.users.last_name}`.trim() : null)
+                        : (tx.receiver_account?.users ? `${tx.receiver_account.users.first_name} ${tx.receiver_account.users.last_name}`.trim() : null);
+                      const baseDesc = tx.description || 'Payment';
+                      let txLabel;
+                      if (tx.type === 'DEPOSIT') txLabel = tx.description || 'ATM Cash Deposit';
+                      else if (tx.type === 'WITHDRAWAL') txLabel = tx.description || 'ATM Cash Withdrawal';
+                      else {
+                        txLabel = counterparty
+                          ? `${baseDesc} - ${isPositive ? 'from' : 'to'} ${counterparty}`
+                          : baseDesc;
+                      }
                       return (
                         <div key={tx.id} onClick={() => handleTxClick(tx.id)} className="flex items-center justify-between px-5 py-4 hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors cursor-pointer group">
                           <div className="flex items-center space-x-3">
@@ -297,7 +310,7 @@ const Dashboard = () => {
                               {isPositive ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-surface-900 dark:text-surface-100">{tx.description || 'System Transfer'}</p>
+                              <p className="text-sm font-semibold text-surface-900 dark:text-surface-100">{txLabel}</p>
                               <p className="text-[10px] text-surface-400 font-medium uppercase tracking-wider">{tx.type} • {tx.reference_id?.split('-')[0]}</p>
                             </div>
                           </div>
@@ -333,33 +346,77 @@ const Dashboard = () => {
       </section>
 
       {/* Transaction Detail Modal — screen centered */}
-      {isModalOpen && selectedTx && (
-        <div className="fixed inset-0 z-[60] animate-fade-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', top: 0, left: 0 }}>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-          <div className="relative bg-white dark:bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-200/50 dark:border-surface-800/50 mx-4">
-            <div className="flex justify-between items-center p-5 border-b border-surface-100 dark:border-surface-800">
-              <h3 className="text-sm font-bold text-surface-900 dark:text-surface-100">Receipt</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-200 bg-surface-100 dark:bg-surface-800 p-1.5 rounded-lg"><X className="h-4 w-4" /></button>
-            </div>
-            <div className="p-6 space-y-5">
-              <div className="text-center pb-5 border-b border-surface-100 dark:border-surface-800">
-                <span className="text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Amount</span>
-                <p className="text-3xl font-bold text-surface-900 dark:text-surface-100 mt-1">₹{parseFloat(selectedTx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                <span className={`mt-2 inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${selectedTx.status === 'COMPLETED' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'}`}>{selectedTx.status}</span>
+      {isModalOpen && selectedTx && (() => {
+        const isCreditForCurrentAcc = selectedTx.receiver_account_id === account?.id || selectedTx.type === 'DEPOSIT';
+        const senderName = selectedTx.sender_account?.users
+          ? `${selectedTx.sender_account.users.first_name} ${selectedTx.sender_account.users.last_name}`.trim()
+          : 'VAYU Bank';
+        const receiverName = selectedTx.receiver_account?.users
+          ? `${selectedTx.receiver_account.users.first_name} ${selectedTx.receiver_account.users.last_name}`.trim()
+          : 'VAYU Bank';
+        const senderAccNum = selectedTx.sender_account?.account_number || '—';
+        const receiverAccNum = selectedTx.receiver_account?.account_number || '—';
+        const smartMemo = selectedTx.description || 'Standard operation.';
+        const receiptRows = [
+          ['Transaction ID', selectedTx.reference_id ? selectedTx.reference_id.split('-')[0].toUpperCase() : '—'],
+          ['Date & Time', new Date(selectedTx.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })],
+          ['Type', selectedTx.type],
+          ['Status', selectedTx.status],
+        ];
+        return (
+          <div className="fixed inset-0 z-[60] animate-fade-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', top: 0, left: 0 }}>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
+            <div className="relative bg-white dark:bg-surface-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border border-surface-200/50 dark:border-surface-800/50 mx-4">
+              <div className="flex justify-between items-center p-5 border-b border-surface-100 dark:border-surface-800">
+                <h3 className="text-sm font-bold text-surface-900 dark:text-surface-100">Receipt</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-200 bg-surface-100 dark:bg-surface-800 p-1.5 rounded-lg"><X className="h-4 w-4" /></button>
               </div>
-              <div className="space-y-3 text-xs">
-                {[['Ref', selectedTx.reference_id?.split('-')[0].toUpperCase()], ['Type', selectedTx.type], ['Date', new Date(selectedTx.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })]].map(([l, v]) => (
-                  <div key={l} className="flex justify-between items-center"><span className="text-surface-400 font-medium">{l}</span><span className="font-semibold text-surface-900 dark:text-surface-200">{v}</span></div>
-                ))}
-              </div>
-              <div className="pt-4 border-t border-surface-100 dark:border-surface-800">
-                <p className="text-[10px] text-surface-400 font-medium uppercase tracking-wider mb-1.5">Memo</p>
-                <p className="text-sm text-surface-700 dark:text-surface-300 bg-surface-50 dark:bg-surface-800 p-3 rounded-xl">{selectedTx.description || 'Standard operation.'}</p>
+              <div className="p-6 space-y-4">
+                {/* Amount */}
+                <div className="text-center pb-4 border-b border-surface-100 dark:border-surface-800">
+                  <span className="text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Amount</span>
+                  <p className="text-3xl font-bold text-surface-900 dark:text-surface-100 mt-1">₹{parseFloat(selectedTx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                  <span className={`mt-2 inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${selectedTx.status === 'COMPLETED' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'}`}>{selectedTx.status}</span>
+                </div>
+
+                {/* Sender / Receiver cards */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-surface-50 dark:bg-surface-800/60 rounded-2xl p-3 border border-surface-100 dark:border-surface-700/50">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-surface-400 mb-1">From</p>
+                    <p className="text-xs font-bold text-surface-900 dark:text-surface-100 leading-tight">{senderName}</p>
+                    <p className="text-[10px] font-mono text-surface-400 mt-0.5 truncate">••••{senderAccNum.slice(-4)}</p>
+                  </div>
+                  <div className="bg-surface-50 dark:bg-surface-800/60 rounded-2xl p-3 border border-surface-100 dark:border-surface-700/50">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-surface-400 mb-1">To</p>
+                    <p className="text-xs font-bold text-surface-900 dark:text-surface-100 leading-tight">{receiverName}</p>
+                    <p className="text-[10px] font-mono text-surface-400 mt-0.5 truncate">••••{receiverAccNum.slice(-4)}</p>
+                  </div>
+                </div>
+
+                {/* Details rows */}
+                <div className="space-y-0 border border-surface-100 dark:border-surface-800 rounded-2xl overflow-hidden">
+                  {receiptRows.map(([label, value]) => (
+                    <div key={label} className="flex justify-between items-center px-4 py-2.5 text-xs border-b border-surface-100 dark:border-surface-800 last:border-0">
+                      <span className="text-surface-400 font-medium">{label}</span>
+                      <span className={`font-semibold text-surface-900 dark:text-surface-200 text-right max-w-[55%] break-all ${
+                        label === 'Status'
+                          ? (selectedTx.status === 'COMPLETED' ? 'text-green-500' : 'text-amber-500')
+                          : ''
+                      }`}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Memo */}
+                <div>
+                  <p className="text-[10px] text-surface-400 font-semibold uppercase tracking-wider mb-1.5">Memo</p>
+                  <p className="text-sm text-surface-700 dark:text-surface-300 bg-surface-50 dark:bg-surface-800 p-3 rounded-xl leading-relaxed">{smartMemo}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <OtpPinModal isOpen={showPinModal} onClose={() => setShowPinModal(false)} onSubmit={handlePinSubmit} title="Verify PIN" length={6} submitLabel="Unlock Balance" subtitle="Enter your 6-digit secure PIN to view account balance." />
       <PinSetupModal isOpen={showPinSetup} onClose={() => setShowPinSetup(false)} onSubmit={pinSetupIsChange ? handleChangePin : handleCreatePin} title={pinSetupIsChange ? 'Change PIN' : 'Create PIN'} isChange={pinSetupIsChange} />

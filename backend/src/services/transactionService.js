@@ -31,7 +31,7 @@ const transactionService = {
     }
     
     // To maintain idempotency, we require or generate a referenceId
-    const finalReferenceId = referenceId || `TX-${crypto.randomUUID()}`;
+    const finalReferenceId = referenceId || crypto.randomUUID();
 
     // Delegate to repository to hit the atomic `transfer_funds` postgres RPC function
     // The RPC will handle SELECT FOR UPDATE, deduce sender, increment receiver, log transaction

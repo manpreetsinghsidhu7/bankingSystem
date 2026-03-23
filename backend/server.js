@@ -1,6 +1,7 @@
 require('dotenv').config();
 const app = require('./src/app');
 const logger = require('./src/utils/logger');
+const { startAutoApproveScheduler } = require('./src/utils/autoApproveScheduler');
 
 const PORT = process.env.PORT || 5000;
 
@@ -16,6 +17,8 @@ process.on('uncaughtException', (err) => {
 
 const server = app.listen(PORT, () => {
   logger.info(`✅ Server is RUNNING dynamically on http://localhost:${PORT}`);
+  // Start background scheduler for auto-approving pending accounts
+  startAutoApproveScheduler();
 });
 
 server.on('error', (err) => {

@@ -5,6 +5,7 @@ import { processTransfer, getTransactionHistory } from '../services/transaction.
 import toast from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import { OtpPinModal } from '../components/UI/OtpPinModal';
+import { PaymentSuccessModal } from '../components/UI/PaymentSuccessModal';
 import { getCardColor } from '../utils/cardColors';
 
 const DAILY_LIMIT = 500000; // ₹5,00,000
@@ -22,6 +23,8 @@ const Transfer = () => {
   const [receiverName, setReceiverName] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successTxData, setSuccessTxData] = useState(null);
 
   // Custom Dropdown State
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -114,10 +117,22 @@ const Transfer = () => {
   const executeTransfer = async (pin) => {
     setLoading(true); setShowPinModal(false);
     try {
-      await processTransfer({ senderAccountId: selectedAccountId, receiverAccountNumber: receiverAccount, amount: parseFloat(amount), description, pin });
-      toast.success(`₹${parseFloat(amount).toLocaleString('en-IN')} transferred successfully to ${receiverName}`);
+      const result = await processTransfer({ senderAccountId: selectedAccountId, receiverAccountNumber: receiverAccount, amount: parseFloat(amount), description, pin });
+      const transferAmount = parseFloat(amount);
+      const txData = result?.data?.data;
+      setSuccessTxData({
+        amount: transferAmount,
+        transactionNumber: txData?.reference_id || txData?.referenceId || txData?.id || '',
+        time: txData?.created_at || new Date().toISOString(),
+        senderAccount: selectedAccount?.account_number || '',
+        receiverAccount: receiverAccount,
+        senderName: 'You',
+        receiverName,
+        description,
+      });
+      setShowSuccessModal(true);
       setReceiverAccount(''); setReceiverVerified(false); setReceiverName(''); setAmount(''); setDescription('');
-      setDailySpent(prev => prev + parseFloat(amount));
+      setDailySpent(prev => prev + transferAmount);
     } catch (err) { toast.error(err.message || 'Transaction could not be processed. Please try again.'); } finally { setLoading(false); }
   };
 
@@ -332,6 +347,12 @@ const Transfer = () => {
 
       <OtpPinModal isOpen={showBalancePinModal} onClose={() => setShowBalancePinModal(false)} onSubmit={handleBalancePinSubmit} title="View Balance" length={6} submitLabel="Unlock Balance"
         subtitle="Enter your 6-digit PIN to view your account balance." />
+
+      <PaymentSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        txData={successTxData}
+      />
     </div>
   );
 };

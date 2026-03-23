@@ -81,7 +81,7 @@ const CreateAccount = () => {
       const up = await updateProfile({ first_name: nameParts.join(' '), last_name: formData.last_name, phone_number: formData.phone_number });
       updateUserProfile({ ...user, ...up.data.user });
       await api.post('accounts', { currency: formData.currency, dob: formData.dob, gender: formData.gender, aadhaar_number: formData.aadhaar_number, pan_number: formData.pan_number });
-      toast.success('Account created! Please set up your PIN from the dashboard.');
+      toast.success('Application submitted! Your request will be approved shortly.', { duration: 5000 });
       navigate('/dashboard');
     } catch (err) { toast.error(err.message || 'Failed'); } finally { setLoading(false); }
   };

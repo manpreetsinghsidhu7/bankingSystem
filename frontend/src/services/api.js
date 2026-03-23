@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 1. Get Base URL from environment or default to local
-const rawBaseURL = import.meta.env.VITE_API_URL;
+const rawBaseURL = import.meta.env.VITE_API_URL ;
 
 // 2. Robustly ensure it ends with /api/v1/
 const getSanitizedBaseURL = (url) => {

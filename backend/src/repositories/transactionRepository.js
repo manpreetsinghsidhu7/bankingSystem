@@ -79,7 +79,11 @@ const transactionRepository = {
   async getAccountTransactions(accountId, limit = 20, offset = 0, filters = {}) {
     let query = supabase
       .from('transactions')
-      .select('*', { count: 'exact' })
+      .select(`
+        *,
+        sender_account:sender_account_id (account_number, users(first_name, last_name)),
+        receiver_account:receiver_account_id (account_number, users(first_name, last_name))
+      `, { count: 'exact' })
       .or(`sender_account_id.eq.${accountId},receiver_account_id.eq.${accountId}`);
 
     if (filters.startDate) {
@@ -105,8 +109,8 @@ const transactionRepository = {
       .from('transactions')
       .select(`
         *,
-        sender_account:sender_account_id (account_number, user_id),
-        receiver_account:receiver_account_id (account_number, user_id)
+        sender_account:sender_account_id (account_number, users(first_name, last_name)),
+        receiver_account:receiver_account_id (account_number, users(first_name, last_name))
       `)
       .eq('id', transactionId)
       .single();
