@@ -38,7 +38,7 @@ const transactionRepository = {
   async executeDeposit(accountId, amount, description, referenceId) {
     try {
       const { data, error } = await supabase.rpc('deposit_funds', {
-        acc_id: accountId,
+        target_account_id: accountId,
         deposit_amount: amount,
         deposit_desc: description,
         ref_id: referenceId
@@ -57,7 +57,7 @@ const transactionRepository = {
   async executeWithdrawal(accountId, amount, description, referenceId) {
     try {
       const { data, error } = await supabase.rpc('withdraw_funds', {
-        acc_id: accountId,
+        source_account_id: accountId,
         withdraw_amount: amount,
         withdraw_desc: description,
         ref_id: referenceId
