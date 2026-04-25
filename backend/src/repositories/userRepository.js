@@ -21,7 +21,7 @@ const userRepository = {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .or(`email.eq."${identifier}",phone_number.eq."${identifier}"`)
+      .or(`email.eq.${identifier},phone_number.eq.${identifier}`)
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"

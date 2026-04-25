@@ -1,14 +1,15 @@
 import axios from 'axios';
 
 // 1. Get Base URL from environment or default to local
-const rawBaseURL = import.meta.env.VITE_API_URL ;
+const rawBaseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 // 2. Robustly ensure it ends with /api/v1/
 const getSanitizedBaseURL = (url) => {
+  if (!url) return 'http://localhost:5000/api/v1/';
   let cleanUrl = url.trim();
   
   // If user forgot /api/v1, add it
-  if (!cleanUrl.includes('/api/v1')) {
+  if (!cleanUrl.toLowerCase().includes('/api/v1')) {
      // Remove trailing slash if present before appending
      cleanUrl = cleanUrl.endsWith('/') ? cleanUrl.slice(0, -1) : cleanUrl;
      cleanUrl = `${cleanUrl}/api/v1`;
