@@ -12,12 +12,10 @@ const transactionService = {
     const senderAccount = await accountRepository.getAccountById(senderAccountId);
     if (!senderAccount) throw new AppError('Sender account not found', 404);
 
-    // Verify ownership
     if (senderAccount.user_id !== userId) {
       throw new AppError('You do not own the sender account', 403);
     }
     
-    // Validate status
     if (senderAccount.status !== 'ACTIVE') {
       throw new AppError('Your account is not yet active. Please wait for admin approval.', 403);
     }
@@ -30,11 +28,8 @@ const transactionService = {
       throw new AppError('Incorrect Payment PIN. Please try again.', 401);
     }
     
-    // To maintain idempotency, we require or generate a referenceId
     const finalReferenceId = referenceId || crypto.randomUUID();
 
-    // Delegate to repository to hit the atomic `transfer_funds` postgres RPC function
-    // The RPC will handle SELECT FOR UPDATE, deduce sender, increment receiver, log transaction
     const result = await transactionRepository.executeTransfer(
       senderAccountId, 
       receiverAccountNumber, 

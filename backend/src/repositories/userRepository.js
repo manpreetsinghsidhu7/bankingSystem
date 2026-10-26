@@ -9,7 +9,7 @@ const userRepository = {
       .single();
 
     if (error) {
-      if (error.code === '23505') { // Unique violation
+      if (error.code === '23505') { 
         throw new Error('Email or phone already exists');
       }
       throw error;
@@ -21,13 +21,13 @@ const userRepository = {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .or(`email.eq.${identifier},phone_number.eq.${identifier}`)
+      .or(`email.eq."${identifier}",phone_number.eq."${identifier}"`)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+    if (error && error.code !== 'PGRST116') { 
       throw error;
     }
-    return data; // returns null if not found
+    return data;
   },
 
   async getAllUsers(page, limit) {

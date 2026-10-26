@@ -9,7 +9,6 @@ const accountService = {
   async createAccount(userId, data) {
     const user = await userRepository.getUserById(userId);
     
-    // Portal user must have both email and phone to open an account
     if (!user.email || !user.phone_number) {
       throw new AppError('Please complete your portal profile (email & phone number required) before opening a bank account.', 400);
     }
@@ -19,7 +18,6 @@ const accountService = {
       throw new AppError('Maximum limit of 3 accounts reached.', 400);
     }
 
-    // Generate a unique 10-digit account number
     const account_number = `ACC-${crypto.randomInt(1000000000, 9999999999)}`;
     
     const accountData = {
@@ -31,7 +29,7 @@ const accountService = {
       aadhaar_number: data.aadhaar_number,
       pan_number: data.pan_number,
       balance: 0.00,
-      status: 'PENDING' // Needs admin approval
+      status: 'PENDING'
     };
 
     try {
@@ -50,7 +48,6 @@ const accountService = {
       throw new AppError('Account not found', 404);
     }
 
-    // Role-based authorization: User must own the account if not admin
     if (role !== 'ADMIN' && account.user_id !== userId) {
       throw new AppError('Not authorized to view this account', 403);
     }
@@ -131,7 +128,6 @@ const accountService = {
   async deleteAccount(accountId, userId, pin) {
     const account = await this.getAccountDetails(accountId, userId, 'USER');
 
-    // Verify PIN if set
     if (account.pin_hash) {
       const isPinValid = await bcrypt.compare(pin.toString(), account.pin_hash);
       if (!isPinValid) throw new AppError('Invalid PIN', 401);

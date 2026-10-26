@@ -16,21 +16,17 @@ const app = express();
 
 const logger = require('./utils/logger');
 
-// 1. GLOBAL MIDDLEWARES
 app.use(cors());
-app.use(express.json({ limit: '10kb' })); // Body parser
+app.use(express.json({ limit: '10kb' }));
 
-// Deep Request Tracer
 app.use((req, res, next) => {
   logger.info(`[INCOMING] ${req.method} ${req.originalUrl}`);
   if (req.body && Object.keys(req.body).length > 0) {
-    // Sanitize passwords from logs!
     const sanitizedBody = { ...req.body };
     if (sanitizedBody.password) sanitizedBody.password = '[REDACTED]';
     logger.debug(`[BODY] ${JSON.stringify(sanitizedBody)}`);
   }
   
-  // Intercept the response end to log completion
   const oldJson = res.json;
   res.json = function(data) {
     logger.info(`[OUTGOING] ${req.method} ${req.originalUrl} - STATUS ${res.statusCode}`);
@@ -44,9 +40,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(morgan('dev')); // Fallback request logging
+app.use(morgan('dev'));
 
-// Limit requests from same API
 const limiter = rateLimit({
   max: 1000,
   windowMs: 15 * 60 * 1000,
@@ -54,7 +49,6 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// 2. ROUTES
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -69,12 +63,9 @@ app.use('/api/v1/accounts', accountRoutes);
 app.use('/api/v1/transactions', transactionRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
-// Handle unhandled routes
 app.use((req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
-
-// 3. ERROR HANDLING MIDDLEWARE
 app.use(globalErrorHandler);
 
 module.exports = app;

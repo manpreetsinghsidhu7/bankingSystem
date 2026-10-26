@@ -9,7 +9,6 @@ const getProfile = async (req, res, next) => {
       return next(new AppError('User not found', 404));
     }
     
-    // hide sensitive data
     const { password_hash, reset_password_token, reset_password_expires, ...safeUser } = user;
     
     res.status(200).json({
@@ -23,7 +22,6 @@ const getProfile = async (req, res, next) => {
 
 const updateProfile = async (req, res, next) => {
   try {
-    // Only allow specific fields to prevent mass assignment (e.g. changing role)
     const allowedUpdates = {};
     if (req.body.first_name) allowedUpdates.first_name = req.body.first_name;
     if (req.body.last_name) allowedUpdates.last_name = req.body.last_name;

@@ -9,7 +9,6 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
-// Log connection attempt
 logger.info(`Connecting to Supabase at: ${supabaseUrl}`);
 
 const supabase = createClient(supabaseUrl, supabaseKey, {

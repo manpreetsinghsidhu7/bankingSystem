@@ -9,10 +9,9 @@ const router = express.Router();
 
 router.use(protect);
 
-// Strict rate limiter for transfers to prevent brute force abuse and accidental double submitting
 const transferLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5, // 5 transfers max per minute per IP
+  windowMs: 1 * 60 * 1000, 
+  max: 5, 
   message: 'Too many transfer attempts. Please try again later.'
 });
 
@@ -21,16 +20,14 @@ const transferSchema = Joi.object({
   receiverAccountNumber: Joi.string().required(),
   amount: Joi.number().positive().min(1).precision(2).required(),
   description: Joi.string().max(255).allow('', null),
-  referenceId: Joi.string().max(100), // Idempotency key
+  referenceId: Joi.string().max(100), 
   pin: Joi.string().length(6).pattern(/^[0-9]+$/).required()
 });
 
 router.post('/transfer', transferLimiter, validateRequest(transferSchema), transactionController.processTransfer);
 
-// :accountId is the account history to look up
 router.get('/:accountId', transactionController.getTransactionHistory);
 
-// Specific transaction details
 router.get('/detail/:id', transactionController.getTransactionById);
 
 module.exports = router;

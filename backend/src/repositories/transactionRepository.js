@@ -37,17 +37,29 @@ const transactionRepository = {
 
   async executeDeposit(accountId, amount, description, referenceId) {
     try {
-      const { data, error } = await supabase.rpc('deposit_funds', {
-        target_account_id: accountId,
+      let { data, error } = await supabase.rpc('deposit_funds', {
+        acc_id: accountId,
         deposit_amount: amount,
         deposit_desc: description,
         ref_id: referenceId
       });
 
+      // Fallback if DB function was created using schema.sql's target_account_id
+      if (error && error.message && error.message.includes('Could not find the function')) {
+        const fallback = await supabase.rpc('deposit_funds', {
+          target_account_id: accountId,
+          deposit_amount: amount,
+          deposit_desc: description,
+          ref_id: referenceId
+        });
+        data = fallback.data;
+        error = fallback.error;
+      }
+
       if (error) throw error;
       return data;
     } catch (err) {
-      if (err.message.includes('unique constraint') || err.code === '23505') {
+      if (err.message && (err.message.includes('unique constraint') || err.code === '23505')) {
         throw new AppError('Duplicate transaction reference', 409);
       }
       throw new AppError(`Deposit failed: ${err.message}`, 500);
@@ -56,20 +68,32 @@ const transactionRepository = {
 
   async executeWithdrawal(accountId, amount, description, referenceId) {
     try {
-      const { data, error } = await supabase.rpc('withdraw_funds', {
-        source_account_id: accountId,
+      let { data, error } = await supabase.rpc('withdraw_funds', {
+        acc_id: accountId,
         withdraw_amount: amount,
         withdraw_desc: description,
         ref_id: referenceId
       });
 
+      // Fallback if DB function was created using schema.sql's source_account_id
+      if (error && error.message && error.message.includes('Could not find the function')) {
+        const fallback = await supabase.rpc('withdraw_funds', {
+          source_account_id: accountId,
+          withdraw_amount: amount,
+          withdraw_desc: description,
+          ref_id: referenceId
+        });
+        data = fallback.data;
+        error = fallback.error;
+      }
+
       if (error) throw error;
       return data;
     } catch (err) {
-      if (err.message.includes('Insufficient funds')) {
+      if (err.message && err.message.includes('Insufficient funds')) {
         throw new AppError('Insufficient funds for withdrawal', 400);
       }
-      if (err.message.includes('unique constraint') || err.code === '23505') {
+      if (err.message && (err.message.includes('unique constraint') || err.code === '23505')) {
         throw new AppError('Duplicate transaction reference', 409);
       }
       throw new AppError(`Withdrawal failed: ${err.message}`, 500);

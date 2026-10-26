@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (identifier, password) => {
     try {
       const response = await loginUser(identifier, password);
-      // api interceptor returns response.data (the body), so response = { status, data: { user, token } }
+      // Based on our backend spec: response.data.user & response.data.token
       const { user: userData, token: accessToken } = response.data;
       
       setUser(userData);
@@ -55,7 +55,6 @@ export const AuthProvider = ({ children }) => {
   const loginWithOtp = async (identifier) => {
     try {
       const response = await loginUserOtp(identifier);
-      // api interceptor returns response.data (the body), so response = { status, data: { user, token } }
       const { user: userData, token: accessToken } = response.data;
       
       setUser(userData);

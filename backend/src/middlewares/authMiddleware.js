@@ -4,7 +4,6 @@ const supabase = require('../config/supabase');
 
 const protect = async (req, res, next) => {
   try {
-    // 1) Getting token and check of it's there
     let token;
     if (
       req.headers.authorization &&
@@ -17,13 +16,10 @@ const protect = async (req, res, next) => {
       return next(new AppError('You are not logged in! Please log in to get access.', 401));
     }
 
-    // 2) Verification token
     const decoded = verifyToken(token);
     if (!decoded) {
       return next(new AppError('Invalid or expired token', 401));
     }
-
-    // 3) Check if user still exists
     const { data: user, error } = await supabase
       .from('users')
       .select('id, email, role')
@@ -34,7 +30,6 @@ const protect = async (req, res, next) => {
       return next(new AppError('The user belonging to this token does no longer exist.', 401));
     }
 
-    // Grant access to protected route
     req.user = user;
     next();
   } catch (err) {

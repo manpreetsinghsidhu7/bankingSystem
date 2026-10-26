@@ -26,8 +26,6 @@ const adminService = {
     
     const account = await accountRepository.updateAccountStatus(accountId, newStatus);
     
-    // In a full implementation we'd also trigger an audit_logs insertion here
-    // using the adminId tracking who froze the account.
     return account;
   },
 

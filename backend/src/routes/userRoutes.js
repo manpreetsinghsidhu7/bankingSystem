@@ -12,7 +12,7 @@ const updateProfileSchema = Joi.object({
   phone_number: Joi.string().allow('', null).optional()
 });
 
-router.use(protect); // All routes strictly protected
+router.use(protect);
 
 router.get('/profile', userController.getProfile);
 router.patch('/profile', validateRequest(updateProfileSchema), userController.updateProfile);

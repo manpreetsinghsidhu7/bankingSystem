@@ -7,7 +7,7 @@ const Joi = require('joi');
 const router = express.Router();
 
 router.use(protect);
-router.use(restrictTo('ADMIN')); // Strict RBAC lock for this entire router
+router.use(restrictTo('ADMIN'));
 
 router.get('/users', adminController.getAllUsers);
 router.get('/accounts', adminController.getAllAccounts);

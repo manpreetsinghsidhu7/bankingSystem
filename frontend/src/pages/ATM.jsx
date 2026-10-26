@@ -66,6 +66,12 @@ const ATM = () => {
         toast.success(`₹${parseFloat(amount).toLocaleString('en-IN')} withdrawn successfully from your account`);
       }
       setAmount('');
+      // Refresh accounts to sync latest balances and status
+      const r = await getMyAccounts();
+      if (r?.data?.accounts) {
+        const active = r.data.accounts.filter(a => a.pin_hash && (a.status === 'ACTIVE' || a.status === 'PENDING'));
+        setAccounts(active);
+      }
     } catch (err) { toast.error(err.message || 'Transaction could not be completed. Please try again.'); } finally { setLoading(false); }
   };
 

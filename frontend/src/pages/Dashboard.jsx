@@ -156,7 +156,7 @@ const Dashboard = () => {
           const cc = getCardColor(idx);
           const isSelected = account.id === acc.id;
           return (
-            <button key={acc.id} onClick={() => handleSelectAccount(acc)} onMouseEnter={() => handleSelectAccount(acc)}
+            <button key={acc.id} onClick={() => handleSelectAccount(acc)}
               className={`relative flex flex-col items-start px-5 py-3.5 rounded-2xl border transition-all duration-200 min-w-[180px] text-left group ${
                 isSelected
                   ? `bg-gradient-to-br ${cc.from} ${cc.to} border-transparent shadow-lg scale-[1.02] text-white`
@@ -198,7 +198,7 @@ const Dashboard = () => {
             <div className="relative z-10 flex flex-col h-full justify-between">
               <div className="flex justify-between items-start">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center border border-white/5"><img src="/images/VAYU.png" alt="" className="w-5 h-5 rounded" /></div>
+                  <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center border border-white/5"><img src="/images/VAYU.png" alt="" className="w-8 h-8 rounded" /></div>
                   <span className="font-bold tracking-wider text-sm text-surface-300">VAYU</span>
                 </div>
                 <div className={`w-10 h-7 bg-gradient-to-br ${cc.chip} rounded-md`}></div>

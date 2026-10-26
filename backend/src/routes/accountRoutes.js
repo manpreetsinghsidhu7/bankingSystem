@@ -6,7 +6,7 @@ const Joi = require('joi');
 
 const router = express.Router();
 
-router.use(protect); // All routes below require auth
+router.use(protect);
 
 const createAccountSchema = Joi.object({
   currency: Joi.string().valid('INR').default('INR'),
@@ -18,8 +18,9 @@ const createAccountSchema = Joi.object({
 
 const transactionSchema = Joi.object({
   amount: Joi.number().positive().required(),
-  description: Joi.string().optional()
-});
+  description: Joi.string().allow('', null).optional(),
+  pin: Joi.string().optional()
+}).unknown(true);
 
 router.post('/', validateRequest(createAccountSchema), accountController.createAccount);
 router.get('/', accountController.getMyAccounts);
